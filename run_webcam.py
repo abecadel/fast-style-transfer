@@ -9,6 +9,9 @@ import transform, vgg, pdb, os
 import tensorflow as tf
 import cv2
 from datetime import datetime
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%y-%m-%d %H:%M:%S', filename='run_webcam.log', filemode='w+')
 
 def load_all_models():
 	mod_dir = "models"
@@ -25,13 +28,11 @@ def load_all_models():
 # parser
 parser = argparse.ArgumentParser()
 parser.add_argument('--device_id', type=int, help='camera device id (default 0)', required=False, default=0)
-parser.add_argument('--width', type=int, help='width to resize camera feed to (default 320)', required=False, default=640)
-parser.add_argument('--disp_width', type=int, help='width to display output (default 640)', required=False, default=1200)
+parser.add_argument('--width', type=int, help='width to resize camera feed to (default 640)', required=False, default=640)
+parser.add_argument('--disp_width', type=int, help='width to display output (default 1200)', required=False, default=1200)
 parser.add_argument('--disp_source', type=int, help='whether to display content and style images next to output, default 1', required=False, default=1)
 parser.add_argument('--horizontal', type=int, help='whether to concatenate horizontally (1) or vertically(0)', required=False, default=1)
 parser.add_argument('--num_sec', type=int, help='number of seconds to hold current model before going to next (-1 to disable)', required=False, default=10)
-
-
 
 
 def load_checkpoint(checkpoint, sess):
@@ -41,7 +42,7 @@ def load_checkpoint(checkpoint, sess):
 		style = cv2.imread(checkpoint)
 		return True
 	except:
-		print("checkpoint %s not loaded correctly" % checkpoint)
+		logging.info("checkpoint %s not loaded correctly" % checkpoint)
 		return False
 
 
@@ -129,12 +130,12 @@ def main(device_id, width, disp_width, disp_source, horizontal, num_sec):
 				break
 			elif key_ == ord('a'):
 				idx_model = (idx_model + len(models) - 1) % len(models)
-				print("load %d / %d : %s " % (idx_model, len(models), models[idx_model]))
+				logging.info("load %d / %d : %s " % (idx_model, len(models), models[idx_model]))
 				load_checkpoint(models[idx_model]["ckpt"], sess)
 				style = cv2.imread(models[idx_model]["style"])
 			elif key_ == ord('s'):
 				idx_model = (idx_model + 1) % len(models)
-				print("load %d / %d : %s " % (idx_model, len(models), models[idx_model]))
+				logging.info("load %d / %d : %s " % (idx_model, len(models), models[idx_model]))
 				load_checkpoint(models[idx_model]["ckpt"], sess)
 				style = cv2.imread(models[idx_model]["style"])
 
@@ -143,7 +144,7 @@ def main(device_id, width, disp_width, disp_source, horizontal, num_sec):
 			if num_sec>0 and dt.seconds > num_sec:
 				t1 = datetime.now()
 				idx_model = (idx_model + 1) % len(models)
-				print("load %d / %d : %s " % (idx_model, len(models), models[idx_model]))
+				logging.info("load %d / %d : %s " % (idx_model, len(models), models[idx_model]))
 				load_checkpoint(models[idx_model]["ckpt"], sess)
 				style = cv2.imread(models[idx_model]["style"])
 
